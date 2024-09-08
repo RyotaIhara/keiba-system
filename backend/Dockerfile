@@ -1,12 +1,19 @@
-FROM php:8.0-apache
+# PHP 8.1を指定
+FROM php:8.1-fpm
 
 # PostgreSQL関連のライブラリをインストール
 RUN apt-get update && apt-get install -y \
     libpq-dev \
     && docker-php-ext-install pdo pdo_pgsql
 
-# ソースコードをコンテナにコピー
-COPY . /var/www/html
+# Composerのインストール
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Apacheの起動
-CMD ["apache2-foreground"]
+WORKDIR /var/www
+
+# Laravel のディレクトリをプロジェクトにコピー
+COPY . /var/www
+
+# パーミッションの修正
+RUN chown -R www-data:www-data /var/www \
+    && chmod -R 755 /var/www/storage
