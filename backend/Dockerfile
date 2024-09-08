@@ -1,5 +1,12 @@
-# PHPの公式イメージをベースにする
-FROM php:8.2-apache
+FROM php:8.0-apache
 
-# PDO PostgreSQLドライバーをインストール
-RUN docker-php-ext-install pdo pdo_mysql
+# PostgreSQL関連のライブラリをインストール
+RUN apt-get update && apt-get install -y \
+    libpq-dev \
+    && docker-php-ext-install pdo pdo_pgsql
+
+# ソースコードをコンテナにコピー
+COPY . /var/www/html
+
+# Apacheの起動
+CMD ["apache2-foreground"]

@@ -1,23 +1,40 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useEffect, useState } from 'react';
 
 function App() {
+  const [data, setData] = useState([]);
+  const [error, setError] = useState(null);
+
+  // データ取得用の useEffect フック
+  useEffect(() => {
+    // データを取得するための fetch
+    fetch('http://localhost:8000/index.php')
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response.json();
+      })
+      .then((data) => {
+        setData(data); // データをstateにセット
+      })
+      .catch((error) => {
+        setError(error); // エラーをstateにセット
+        console.error('Error fetching data:', error);
+      });
+  }, []);
+
+  if (error) {
+    return <div>Error: {error.message}</div>;
+  }
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div>
+      <h1>Fetched Data</h1>
+      <ul>
+        {data.map((item, index) => (
+          <li key={index}>{JSON.stringify(item)}</li>
+        ))}
+      </ul>
     </div>
   );
 }

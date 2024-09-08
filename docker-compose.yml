@@ -1,53 +1,59 @@
-version: '3'
-services:
-  backend:
-    build: ./backend
-    container_name: php-backend
-    ports:
-      - "8000:80"
-    volumes:
-      - backend-src:/var/www/html
-    networks:
-      - app-network
-    environment:
-      DB_HOST: postgres
-      DB_PORT: 5432
-      DB_NAME: your_database_name
-      DB_USER: your_database_user
-      DB_PASSWORD: your_database_password
+version: '3.8'
 
+services:
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
     container_name: react-frontend
     ports:
       - "3000:3000"
     volumes:
-      - frontend-src:/app/src
+      - ./frontend:/app
+      - frontend-node-modules:/app/node_modules
     networks:
       - app-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: php-backend
+    ports:
+      - "8000:80"
+    volumes:
+      - ./backend:/var/www/html
+    networks:
+      - app-network
+    depends_on:
+      - postgres
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: keiba_database
+      DB_USER: my_user
+      DB_PASSWORD: my_password
 
   postgres:
     image: postgres:latest
     container_name: postgres-db
     environment:
-      POSTGRES_DB: your_database_name
-      POSTGRES_USER: your_database_user
-      POSTGRES_PASSWORD: your_database_password
+      POSTGRES_DB: keiba_database
+      POSTGRES_USER: my_user
+      POSTGRES_PASSWORD: my_password
     volumes:
       - postgres-data:/var/lib/postgresql/data
-    networks:
-      - app-network
     ports:
       - "5432:5432"
+    networks:
+      - app-network
 
 networks:
   app-network:
     driver: bridge
 
 volumes:
-  backend-src:
-    driver: local
-  frontend-src:
+  frontend-node-modules:
     driver: local
   postgres-data:
     driver: local
